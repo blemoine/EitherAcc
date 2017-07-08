@@ -1,8 +1,9 @@
 package co.sachemmolo.eitheracc
 
 import shapeless.{:+:, CNil, Coproduct, DepFn2, Inl, Inr}
-import shapeless.ops.coproduct.{Basis, FilterNot, Remove, Selector}
+import shapeless.ops.coproduct.{Basis, FilterNot, Remove}
 
+// most of this code is courtesy of Shapeless
 trait CoproductUnion[L <: Coproduct, M <: Coproduct] extends DepFn2[L, M] with Serializable {
   type Out <: Coproduct
 
@@ -96,8 +97,6 @@ object BasisOps {
       }
     }
   }
-
-
 
   def augBoth[L <: Coproduct, M <: Coproduct, H](basis: Basis[L, M]): Basis[H :+: L, H :+: M] = new Basis[H :+: L, H :+: M] {
     override type Rest = basis.Rest

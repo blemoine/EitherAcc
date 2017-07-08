@@ -3,7 +3,7 @@ package co.sachemmolo.eitheracc
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, WordSpec}
-import shapeless.{:+:, CNil, Coproduct, Inl}
+import shapeless.{:+:, CNil, Coproduct, Inl, Poly1}
 
 class EitherAccSpec extends WordSpec with Matchers with PropertyChecks {
 
@@ -31,6 +31,26 @@ class EitherAccSpec extends WordSpec with Matchers with PropertyChecks {
       }
     }
 
+  }
+
+  "fold" should {
+    "return the value is EitherAcc is a success" in {
+      object getLength extends Poly1 {
+        implicit def caseString = at[String](_.length)
+      }
+      forAll { (i:Int) =>
+        EitherAcc.pure[String, Int](i).fold(getLength, identity) shouldBe i
+      }
+    }
+
+    "return the error is EitherAcc is an error" in {
+      object getLength extends Poly1 {
+        implicit def caseString = at[String](_.length)
+      }
+      forAll { (s:String) =>
+        EitherAcc.err[String, Int](s).fold(getLength, identity) shouldBe s.length
+      }
+    }
   }
 
   "map" should {
