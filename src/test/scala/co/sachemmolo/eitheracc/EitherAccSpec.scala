@@ -31,6 +31,38 @@ class EitherAccSpec extends WordSpec with Matchers with PropertyChecks {
       }
     }
 
+    "construct a success from a right" in {
+      forAll { (i:Int) =>
+        val r:EitherAcc[String :+: CNil, Int] = EitherAcc.fromEither(Right(i))
+
+        r shouldBe Success(i)
+      }
+    }
+
+    "construct an error from a left" in {
+      forAll { (s:String) =>
+        val r:EitherAcc[String :+: CNil, Int] = EitherAcc.fromEither(Left(s))
+
+        r match {
+          case Success(value) => fail("The generated EitherAcc should be an error")
+          case Err(e) => e.select[String] shouldBe Some(s)
+        }
+      }
+    }
+  }
+
+  "isError" should {
+    "return true if the EitherAcc is an error" in {
+      forAll(genErrAcc[String, CNil, Int](Arbitrary.arbitrary[String])) { (e:EitherAcc[String :+: CNil, Int]) =>
+        e.isError shouldBe true
+      }
+    }
+
+    "return false if the EitherAcc is a success" in {
+      forAll(genSuccessAcc[String, CNil, Int](Arbitrary.arbitrary[Int])) { (e:EitherAcc[String :+: CNil, Int]) =>
+        e.isError shouldBe false
+      }
+    }
   }
 
   "fold" should {
@@ -84,11 +116,25 @@ class EitherAccSpec extends WordSpec with Matchers with PropertyChecks {
     }
   }
 
+  "toEither" should {
+    "generate a Right from a success" in {
+      forAll { (i:Int) =>
+        EitherAcc.pure(i).toEither shouldBe Right(i)
+      }
+    }
+    "generate a Left from an error" in {
+      forAll { (s:String) =>
+        EitherAcc.err(s).toEither shouldBe Left(Inl(s))
+      }
+    }
+  }
+
   "flatMap in for" should {
     val successA: EitherAcc[String :+: CNil, Int] = EitherAcc.pure[String, Int](1)
     val successB: EitherAcc[Long :+: CNil, Int] = EitherAcc.pure[Long, Int](10)
     val successC: EitherAcc[Boolean :+: CNil, Int] = EitherAcc.pure[Boolean, Int](100)
     val failB: EitherAcc[Long :+: CNil, Int] = EitherAcc.err(-1L)
+    val failB2: EitherAcc[Long :+: CNil, Int] = EitherAcc.err(-10L)
 
     "return correct value if all in success" in {
       val result: EitherAcc[String :+: Long :+: Boolean :+: CNil, Int] = for {
@@ -113,6 +159,21 @@ class EitherAccSpec extends WordSpec with Matchers with PropertyChecks {
           e.select[Long] shouldBe Some(-1L)
           e.select[String] shouldBe None
           e.select[Boolean] shouldBe None
+      }
+    }
+
+    "aggregate same types of error" in {
+      val result: EitherAcc[Long :+: String :+: CNil, Int] = for {
+        a <- failB2
+        b <- successA
+        c <- failB
+      } yield a + b +c
+
+      result match {
+        case Success(_) => fail("result should be an error")
+        case Err(e) =>
+          e.select[Long] shouldBe Some(-10L)
+          e.select[String] shouldBe None
       }
     }
   }
