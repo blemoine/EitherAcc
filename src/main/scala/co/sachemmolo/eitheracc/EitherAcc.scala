@@ -1,7 +1,7 @@
 package co.sachemmolo.eitheracc
 
-import shapeless.ops.coproduct.{Basis, FilterNot, Folder, Remove, Selector}
-import shapeless.{:+:, CNil, Coproduct, DepFn1, DepFn2, Inl, Inr, Poly}
+import shapeless.ops.coproduct.{Basis, Folder}
+import shapeless.{:+:, CNil, Coproduct, Inl, Poly}
 
 
 sealed trait EitherAcc[S <: Coproduct, A] extends Product with Serializable {
