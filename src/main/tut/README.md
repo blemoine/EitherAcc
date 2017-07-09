@@ -1,13 +1,13 @@
 EitherAcc
 =========
 
-A `Either` type on steroïds, able to accumulate error types. 
+An `Either` type on steroïds, able to accumulate error types. 
 
 
 Why
 ---
-`Either`, especially in Scala 2.12, can be used to do some error management. 
-By convention `Left` will represent error and `Right` will represent the expected value.
+`Either`, especially in Scala 2.12, can be used to perform error management. 
+By convention `Left` will represent the error and `Right` will represent the expected value.
 
 For example: 
 ```tut:silent
@@ -18,7 +18,7 @@ def parseStr(s: String): Either[String, Int] = try {
   }  
 ```
 
-This function will return a `String` when there is an error, an `Int` when the parameter `String` can be parsed.
+This function will return a `String` when there is an error, and an `Int` when the parameter `String` can be parsed.
 
 ```tut
 parseStr("test")
@@ -26,8 +26,8 @@ parseStr("test")
 parseStr("34")
 ```
 
-That said, `String` as an error type is not really descriptive. 
-From an external point of view, we know that the function can fail, but we don't know with which kind of failure.
+That being said, `String` as an error type is not really descriptive. 
+From an external point of view, we know that the function can fail, but we don't know with what kind of failure occurred.
 It would be better to use a _specific type_ to represent our error.
 
 ```tut:silent
@@ -53,8 +53,8 @@ def divide(nb1: Double, nb2: Double): Either[DivideByZero, Double] = {
 }
 ```
 
-The following code will generate an `Either` with the super type of our 2 error types. The problem is that their only common super type is
-`Serializable with Product`, thus we lose all type information on the error, and that defeats the objective to have a more precise type
+The following code will generate an `Either` with the super type of our two error types. The problem is that the only super type they share in common is
+`Serializable with Product`, thus we lose all type information pertaining to the error, which stands in the way of our goal to achieve a more precise type.
 
 ```tut
 for {
@@ -64,7 +64,7 @@ for {
 } yield result
 ```
 
-The way to circumvent that is to try to have a
+The way to circumvent this is to try to have a
 `Either[Either[NumberFormatError, DivideByZero], Double]`, but to generate this is not easy a lot of _accidental complexity_:
 
 
@@ -76,7 +76,7 @@ for {
 } yield result
 ```
 
-And it would be even more complex with more than 2 error types.
+And it would be even more complex with more than two error types.
 
 `EitherAcc` is a way to solve this problem.
  
@@ -146,12 +146,12 @@ parseAndDivide("3","da").fold(getErrorAsString, _.toString)
 parseAndDivide("3","0").fold(getErrorAsString, _.toString)
 ```
 
-Monadic concerns
+Monadic concern
 ----------------
 
-The _left_ type of `EitherAcc` change with a `flatMap` and as such it's necessary not a monad.
-That said, it possible to fix beforehand the type of the error accumulator, via the `widen` operation.
-That way, the _left_ type become fixed, and our `EitherAcc` becomes monadic
+The _left_ type of `EitherAcc` changes with a `flatMap`, and as such it cannot be a monad.
+It is however possible to fix the type of the error accumulator first, through the `widen` operation.
+That way, the _left_ type becomes fixed, and our `EitherAcc` becomes monadic.
  
 ```tut
 
@@ -164,5 +164,5 @@ for {
 } yield result
 ``` 
 
-Don't worry, `widen` is not a cast, it can be called only if the error type of `EitherAcc` in included in the widened type.
+Don't worry, `widen` is not a cast, it can be called only if the error type of `EitherAcc` is included in the widened type.
    
