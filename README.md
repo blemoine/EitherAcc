@@ -1,6 +1,9 @@
 EitherAcc
 =========
 
+A `Either` type on steroïds, able to accumulate error types. 
+
+
 Why
 ---
 `Either`, especially in Scala 2.12, can be used to do some error management. 
@@ -15,7 +18,7 @@ def parseStr(s: String): Either[String, Int] = try {
   }  
 ```
 
-This function will return a `String` when there is an error, an `Int` when `String` can be parsed.
+This function will return a `String` when there is an error, an `Int` when the parameter `String` can be parsed.
 
 ```scala
 scala> parseStr("test")
@@ -25,9 +28,9 @@ scala> parseStr("34")
 res1: Either[String,Int] = Right(34)
 ```
 
-That said, the error type `String` is not really descriptive. 
+That said, `String` as an error type is not really descriptive. 
 From an external point of view, we know that the function can fail, but we don't know with which kind of failure.
-It would be better to use a _type_ to represent our error
+It would be better to use a _specific type_ to represent our error.
 
 ```scala
 case class NumberFormatError(nonFormattableString: String)
@@ -38,13 +41,12 @@ def parse(s: String): Either[NumberFormatError, Int] = try {
     }  
 ```
 
-There is now an explicit type:
 ```scala
 scala> parse("test")
 res2: Either[NumberFormatError,Int] = Left(NumberFormatError(test))
 ```
 
-It's clearly better, but we have a problem when mixing different error type.
+It's clearly better, but we now have a problem when mixing different error types.
 
 ```scala
 scala> case class DivideByZero(nb1: Double) 
@@ -58,7 +60,7 @@ divide: (nb1: Double, nb2: Double)Either[DivideByZero,Double]
 ```
 
 The following code will generate an `Either` with the super type of our 2 error types. The problem is that their only common super type is
-`Serializable with Product`, thus we lose all type informations for the error, and that defeat the objective to have a more precise type
+`Serializable with Product`, thus we lose all type information on the error, and that defeats the objective to have a more precise type
 
 ```scala
 scala> for {
@@ -70,8 +72,7 @@ res3: scala.util.Either[Product with Serializable,Double] = Right(0.666666666666
 ```
 
 The way to circumvent that is to try to have a
-`Either[Either[NumberFormatError, DivideByZero], Double]`, but to generate this is not easy from the code perspective, 
-it's generating a lot of noise:
+`Either[Either[NumberFormatError, DivideByZero], Double]`, but to generate this is not easy a lot of _accidental complexity_:
 
 
 ```scala
@@ -91,7 +92,7 @@ What
 ---
 
 `EitherAcc` is a :
-   - disjunction (it's 2 possible values are`Err` OR `Success`).
+   - disjunction - there is 2 possible value, `Err` and `Success`.
    - like `Either`, `Err` is absorbing: you don't accumulate errors
    - unlike `Either` it's accumulating error _types_
    
@@ -110,6 +111,7 @@ res5: co.sachemmolo.eitheracc.EitherAcc[NumberFormatError :+: DivideByZero :+: s
 ```
 
 We can see that the resulting type `EitherAcc[NumberFormatError :+: DivideByZero :+: CNil, Double]` has accumulated the type.
+That type can be read as "A value of type Double or an error, which type will be `NumberFormatError` OR `DivideByZero`".
 
 Using the library
 -------
@@ -129,7 +131,7 @@ res8: co.sachemmolo.eitheracc.EitherAcc[DivideByZero :+: shapeless.CNil,String] 
 
 ### Getting the value
 
-When you finally have your value wrapped in an `EitherAcc`, you will want to get back your result, the error or the success value.
+When you finally have your value wrapped in an `EitherAcc`, you will want to get back your result - the error or the success value.
 This operation is in fact _folding_ the `EitherAcc` and we'll need [`Poly1` from Shapeless](https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#polymorphic-function-values) to do that.
 
 ```scala
@@ -182,5 +184,5 @@ scala> for {
 res12: co.sachemmolo.eitheracc.EitherAcc[NumberFormatError :+: DivideByZero :+: shapeless.CNil,Double] = Success(0.6666666666666666)
 ``` 
 
-Don't worry, `widen` is not a cast, can be done only if the error type of `EitherAcc` in included in the widened type.
+Don't worry, `widen` is not a cast, it can be called only if the error type of `EitherAcc` in included in the widened type.
    
