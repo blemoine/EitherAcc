@@ -27,7 +27,7 @@ parseStr("34")
 ```
 
 That being said, `String` as an error type is not really descriptive. 
-From an external point of view, we know that the function can fail, but we don't know with what kind of failure occurred.
+From an external point of view, we know that the function can fail, but we don't know what kind of failure occurred.
 It would be better to use a _specific type_ to represent our error.
 
 ```tut:silent
