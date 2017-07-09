@@ -53,7 +53,7 @@ def divide(nb1: Double, nb2: Double): Either[DivideByZero, Double] = {
 }
 ```
 
-The following code will generate an `Either` with the super type of our two error types. The problem is that the only super type they share in common is
+The following code will generate an `Either` with the super type of our two error types. The problem is that the only common super type is
 `Serializable with Product`, thus we lose all type information pertaining to the error, which stands in the way of our goal to achieve a more precise type.
 
 ```tut
