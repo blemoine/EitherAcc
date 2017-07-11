@@ -146,8 +146,8 @@ defined object getErrorAsString
 
 scala> def parseAndDivide(str1: String, str2: String): EitherAcc[NumberFormatError :+: DivideByZero :+: CNil, Double] = {
      |     for {
-     |       nb1 <- EitherAcc.fromEither(parse("2"))
-     |       nb2 <- EitherAcc.fromEither(parse("3"))
+     |       nb1 <- EitherAcc.fromEither(parse(str1))
+     |       nb2 <- EitherAcc.fromEither(parse(str2))
      |       result <- EitherAcc.fromEither(divide(nb1, nb2))
      |     } yield result
      | }
@@ -156,13 +156,13 @@ parseAndDivide: (str1: String, str2: String)co.sachemmolo.eitheracc.EitherAcc[Nu
 
 ```scala
 scala> parseAndDivide("3","5").fold(getErrorAsString, _.toString)
-res9: String = 0.6666666666666666
+res9: String = 0.6
 
 scala> parseAndDivide("3","da").fold(getErrorAsString, _.toString)
-res10: String = 0.6666666666666666
+res10: String = Fail format da to number
 
 scala> parseAndDivide("3","0").fold(getErrorAsString, _.toString)
-res11: String = 0.6666666666666666
+res11: String = Fail to divide 3.0 by 0
 ```
 
 Monadic concern

@@ -131,8 +131,8 @@ object getErrorAsString extends Poly1 {
 
 def parseAndDivide(str1: String, str2: String): EitherAcc[NumberFormatError :+: DivideByZero :+: CNil, Double] = {
     for {
-      nb1 <- EitherAcc.fromEither(parse("2"))
-      nb2 <- EitherAcc.fromEither(parse("3"))
+      nb1 <- EitherAcc.fromEither(parse(str1))
+      nb2 <- EitherAcc.fromEither(parse(str2))
       result <- EitherAcc.fromEither(divide(nb1, nb2))
     } yield result
 }
